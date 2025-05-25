@@ -114,17 +114,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     data: convertToFlSpots(data.temperature),
                   ),
                   SensorChart(
-                    title: 'pH',
+                    title: 'pH (Keasaman)',
                     color: Colors.blue,
                     data: convertToFlSpots(data.ph),
                   ),
                   SensorChart(
-                    title: 'Total Padatan Terlarut (TDS)',
+                    title: 'Zat Terlarut (mg/L)',
                     color: Colors.green,
                     data: convertToFlSpots(data.solids),
                   ),
                   SensorChart(
-                    title: 'Kekeruhan (Turbidity)',
+                    title: 'Kekeruhan (NTU)',
                     color: Colors.purple,
                     data: convertToFlSpots(data.turbidity),
                   ),
@@ -276,12 +276,22 @@ class SensorChart extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: const [
+              Icon(Icons.schedule, size: 16, color: Colors.grey),
+              SizedBox(width: 4),
+              Text(
+                "Diperbarui otomatis setiap 5 menit",
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  /// Otomatis menentukan jarak antar garis Y
   double _calculateInterval(List<FlSpot> data) {
     if (data.isEmpty) return 1;
     double min = data.map((e) => e.y).reduce((a, b) => a < b ? a : b);
