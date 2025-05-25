@@ -43,6 +43,42 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
+  Widget buildDateButton({
+    required String label,
+    required VoidCallback onPressed,
+    required IconData icon,
+  }) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.blue.shade200),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.blue.shade800,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 0,
+          ),
+          onPressed: onPressed,
+          icon: Icon(icon, size: 18),
+          label: Text(label, textAlign: TextAlign.center),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
@@ -74,7 +110,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   onChanged: (val) {
                     setState(() {
                       isRangeMode = val;
-                      // Reset data saat ganti mode
                       selectedDate = null;
                       startDate = null;
                       endDate = null;
@@ -84,91 +119,79 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Text(isRangeMode ? 'Rentang' : 'Per Hari'),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             if (!isRangeMode)
               Row(
                 children: [
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                          locale: const Locale('id', 'ID'),
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            selectedDate = picked;
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.calendar_today, size: 16),
-                      label: Text(
-                        selectedDate != null
-                            ? DateFormat('dd MMM yyyy', 'id_ID').format(selectedDate!)
-                            : 'Pilih Tanggal',
-                      ),
-                    ),
+                  buildDateButton(
+                    icon: Icons.calendar_today,
+                    label: selectedDate != null
+                        ? DateFormat('dd MMM yyyy', 'id_ID').format(selectedDate!)
+                        : 'Pilih Tanggal',
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                        locale: const Locale('id', 'ID'),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          selectedDate = picked;
+                        });
+                      }
+                    },
                   ),
                 ],
               )
             else
               Row(
                 children: [
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: startDate ?? DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                          locale: const Locale('id', 'ID'),
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            startDate = picked;
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.date_range, size: 16),
-                      label: Text(
-                        startDate != null
-                            ? DateFormat('dd MMM yyyy', 'id_ID').format(startDate!)
-                            : 'Mulai',
-                      ),
-                    ),
+                  buildDateButton(
+                    icon: Icons.date_range,
+                    label: startDate != null
+                        ? DateFormat('dd MMM yyyy', 'id_ID').format(startDate!)
+                        : 'Mulai',
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: startDate ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                        locale: const Locale('id', 'ID'),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          startDate = picked;
+                        });
+                      }
+                    },
                   ),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: TextButton.icon(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: endDate ?? DateTime.now(),
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime.now(),
-                          locale: const Locale('id', 'ID'),
-                        );
-                        if (picked != null) {
-                          setState(() {
-                            endDate = picked;
-                          });
-                        }
-                      },
-                      icon: const Icon(Icons.date_range, size: 16),
-                      label: Text(
-                        endDate != null
-                            ? DateFormat('dd MMM yyyy', 'id_ID').format(endDate!)
-                            : 'Sampai',
-                      ),
-                    ),
+                  buildDateButton(
+                    icon: Icons.date_range,
+                    label: endDate != null
+                        ? DateFormat('dd MMM yyyy', 'id_ID').format(endDate!)
+                        : 'Sampai',
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: endDate ?? DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                        locale: const Locale('id', 'ID'),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          endDate = picked;
+                        });
+                      }
+                    },
                   ),
                 ],
               ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Expanded(
               child: FutureBuilder<List<dynamic>>(
                 future: fetchHistories(),
@@ -201,7 +224,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           timestamp.isBefore(end.add(const Duration(seconds: 1)));
                     }
 
-                    return true; // Tampilkan semua jika tidak ada filter
+                    return true;
                   }).toList();
 
                   if (filteredData.isEmpty) {
@@ -213,7 +236,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     itemBuilder: (context, index) {
                       final data = filteredData[index];
                       final timestamp = DateTime.parse(data['timestamp']).toLocal();
-                      final dateFormatted = DateFormat('EEEE, dd MMM yyyy HH:mm', 'id_ID').format(timestamp);
+                      final dateFormatted =
+                          DateFormat('EEEE, dd MMM yyyy HH:mm', 'id_ID').format(timestamp);
 
                       return HistoryCard(
                         tanggal: dateFormatted,
@@ -252,7 +276,6 @@ class HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -260,19 +283,33 @@ class HistoryCard extends StatelessWidget {
           BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ExpansionTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        title: Text(
+          tanggal,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          'Status: $status',
+          style: TextStyle(
+            color: status == 'Layak' ? Colors.green : Colors.red,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        trailing: const Icon(Icons.expand_more),
         children: [
-          Text('Tanggal: $tanggal', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text('pH: $ph'),
-          Text('Turbidity: $turbidity'),
-          Text('Solids: $solids'),
-          Text('Temperature: $temperature'),
-          Text(
-            'Status: $status',
-            style: TextStyle(
-              color: status == 'Layak' ? Colors.green : Colors.red,
-              fontWeight: FontWeight.w600,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start, // rata kiri
+              children: [
+                Text('Suhu (°C): $temperature'),
+                Text('Zat Terlarut (mg/L): $solids'),
+                Text('Kekeruhan (NTU): $turbidity'),
+                Text('pH (Keasaman): $ph'),
+              ],
             ),
           ),
         ],
