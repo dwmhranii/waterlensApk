@@ -52,9 +52,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.blue.shade100,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blue.shade200),
           boxShadow: const [
             BoxShadow(
               color: Colors.black12,
@@ -65,8 +64,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
         child: ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.blue.shade800,
+            backgroundColor: Colors.blue.shade100,
+            foregroundColor: Colors.blue.shade900,
             padding: const EdgeInsets.symmetric(vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 0,
@@ -287,9 +286,20 @@ class HistoryCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          tanggal,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+        title: Row(
+          children: [
+            Icon(
+              status == 'Layak' ? Icons.check_circle : Icons.warning,
+              color: status == 'Layak' ? Colors.green : Colors.red,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                tanggal,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
         subtitle: Text(
           'Status: $status',
@@ -298,19 +308,27 @@ class HistoryCard extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: const Icon(Icons.expand_more),
+        trailing: const Icon(Icons.keyboard_arrow_down),
         children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start, // rata kiri
-              children: [
-                Text('Suhu (°C): $temperature'),
-                Text('Zat Terlarut (mg/L): $solids'),
-                Text('Kekeruhan (NTU): $turbidity'),
-                Text('pH (Keasaman): $ph'),
-              ],
-            ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.thermostat),
+            title: Text('Suhu (°C): $temperature'),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.opacity),
+            title: Text('Zat Terlarut (mg/L): $solids'),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.blur_on),
+            title: Text('Kekeruhan (NTU): $turbidity'),
+          ),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.science),
+            title: Text('pH (Keasaman): $ph'),
           ),
         ],
       ),
