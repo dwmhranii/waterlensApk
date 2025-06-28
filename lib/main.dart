@@ -120,15 +120,23 @@
 //     );
 //   }
 // }
-
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'screens/home_screen.dart';
 import 'screens/analyze_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/splash_screen.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  // Berlangganan ke topik agar bisa terima notifikasi broadcast
+  await FirebaseMessaging.instance.subscribeToTopic('allUsers');
+
   runApp(const MyApp());
 }
 
@@ -146,7 +154,6 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
       ),
       home: const SplashScreen(),
-
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -161,6 +168,27 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Function untuk menangani notifikasi masuk dan arahkan ke AnalyzeScreen
+void setupFCMListener(BuildContext context) {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      // Jika app sedang dibuka dan dapat notifikasi
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AnalyzeScreen()),
+      );
+    }
+  });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    // Jika user klik notifikasi dari background
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AnalyzeScreen()),
+    );
+  });
+}
+
 class NavigationController extends StatefulWidget {
   const NavigationController({super.key});
 
@@ -171,24 +199,43 @@ class NavigationController extends StatefulWidget {
 class _NavigationControllerState extends State<NavigationController> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeScreen(),
-    AnalyzeScreen(),
-    HistoryScreen(),
-  ];
+  Widget _getPage(int index) {
+    switch (index) {
+      case 0:
+        return const HomeScreen();
+      case 1:
+        return const AnalyzeScreen();
+      case 2:
+        return const HistoryScreen();
+      default:
+        return const HomeScreen();
+    }
+  }
+
+  late Widget _currentPage;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = _getPage(_selectedIndex);
+
+    // Inisialisasi listener notifikasi setelah widget terpasang
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setupFCMListener(context);
+    });
+  }
 
   void _onItemTapped(int index) {
-    if (index != _selectedIndex) {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
+    setState(() {
+      _selectedIndex = index;
+      _currentPage = _getPage(index); // buat ulang halaman
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: _currentPage,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

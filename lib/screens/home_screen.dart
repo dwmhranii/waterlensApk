@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
-
+import 'article_screen.dart';
 import '../widgets/custom_app_bar.dart';
 
 class ParameterData {
@@ -40,6 +40,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<ParameterData> futureData;
+
+  final List<String> imageUrls = [
+    'https://images.unsplash.com/photo-1609112828502-14c52f7575bc',
+    'https://images.unsplash.com/photo-1519125323398-675f0ddb6308',
+    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1',
+  ];
 
   @override
   void initState() {
@@ -90,14 +96,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Container(
+
+                  // Ganti CarouselSlider dengan PageView
+                  SizedBox(
                     height: 160,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(16),
+                    child: PageView.builder(
+                      controller: PageController(viewportFraction: 0.85),
+                      itemCount: imageUrls.length,
+                      itemBuilder: (context, index) {
+                        final imageUrl = imageUrls[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const ArticleScreen()),
+                              );
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    child: const Center(child: Text("📸 Carousel atau Gambar")),
                   ),
+
                   const SizedBox(height: 24),
                   Text(
                     "Kualitas Air Terkini",
