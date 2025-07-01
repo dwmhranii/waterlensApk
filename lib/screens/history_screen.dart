@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../widgets/custom_app_bar.dart';
+import 'history_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -208,7 +209,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   }
 
                   final filteredData = snapshot.data!.where((data) {
-                    final timestamp = DateTime.parse(data['timestamp']).toLocal();
+                    if (data['timestamp'] == null) return false;
+
+                    DateTime? timestamp;
+                    try {
+                      timestamp = DateTime.parse(data['timestamp']).toLocal();
+                    } catch (_) {
+                      return false;
+                    }
 
                     if (!isRangeMode && selectedDate != null) {
                       return timestamp.year == selectedDate!.year &&
@@ -238,13 +246,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       final dateFormatted =
                           DateFormat('EEEE, dd MMM yyyy HH:mm', 'id_ID').format(timestamp);
 
-                      return HistoryCard(
-                        tanggal: dateFormatted,
-                        ph: data['ph']?.toString() ?? '-',
-                        status: data['status'] ?? '-',
-                        turbidity: data['turbidity']?.toString() ?? '-',
-                        solids: data['solids']?.toString() ?? '-',
-                        temperature: data['temperature']?.toString() ?? '-',
+                      return InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  HistoryDetailScreen(documentId: data['id']),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+                            ],
+                          ),
+                          child: ListTile(
+                            leading: Icon(
+                              data['status'] == 'Layak' ? Icons.check_circle : Icons.warning,
+                              color: data['status'] == 'Layak' ? Colors.green : Colors.red,
+                            ),
+                            title: Text(dateFormatted,
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text('Status: ${data['status']}'),
+                            trailing: const Icon(Icons.chevron_right),
+                          ),
+                        ),
                       );
                     },
                   );
@@ -253,84 +284,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class HistoryCard extends StatelessWidget {
-  final String tanggal, ph, status, turbidity, solids, temperature;
-
-  const HistoryCard({
-    super.key,
-    required this.tanggal,
-    required this.ph,
-    required this.status,
-    required this.turbidity,
-    required this.solids,
-    required this.temperature,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
-        ],
-      ),
-      child: ExpansionTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Row(
-          children: [
-            Icon(
-              status == 'Layak' ? Icons.check_circle : Icons.warning,
-              color: status == 'Layak' ? Colors.green : Colors.red,
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                tanggal,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        subtitle: Text(
-          'Status: $status',
-          style: TextStyle(
-            color: status == 'Layak' ? Colors.green : Colors.red,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        trailing: const Icon(Icons.keyboard_arrow_down),
-        children: [
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.thermostat),
-            title: Text('Suhu (°C): $temperature'),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.opacity),
-            title: Text('Zat Terlarut (mg/L): $solids'),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.blur_on),
-            title: Text('Kekeruhan (NTU): $turbidity'),
-          ),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.science),
-            title: Text('pH (Keasaman): $ph'),
-          ),
-        ],
       ),
     );
   }

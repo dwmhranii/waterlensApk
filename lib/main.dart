@@ -120,6 +120,7 @@
 //     );
 //   }
 // }
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -169,10 +170,14 @@ class MyApp extends StatelessWidget {
 }
 
 // Function untuk menangani notifikasi masuk dan arahkan ke AnalyzeScreen
-void setupFCMListener(BuildContext context) {
+void setupFCMListener(BuildContext context) async {
+  // Minta permission (wajib untuk Android 13+)
+  await FirebaseMessaging.instance.requestPermission();
+
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('📥 Foreground message: ${message.notification?.title}');
     if (message.notification != null) {
-      // Jika app sedang dibuka dan dapat notifikasi
+      // Bisa ganti ke showDialog kalau tidak ingin langsung push
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const AnalyzeScreen()),
@@ -181,7 +186,7 @@ void setupFCMListener(BuildContext context) {
   });
 
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    // Jika user klik notifikasi dari background
+    print('🔔 Notification clicked: ${message.notification?.title}');
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const AnalyzeScreen()),
@@ -219,7 +224,7 @@ class _NavigationControllerState extends State<NavigationController> {
     super.initState();
     _currentPage = _getPage(_selectedIndex);
 
-    // Inisialisasi listener notifikasi setelah widget terpasang
+    // Jalankan listener FCM setelah build pertama selesai
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setupFCMListener(context);
     });
@@ -228,7 +233,7 @@ class _NavigationControllerState extends State<NavigationController> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _currentPage = _getPage(index); // buat ulang halaman
+      _currentPage = _getPage(index);
     });
   }
 
